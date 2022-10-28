@@ -1,28 +1,70 @@
 <template>
-  <div id="app">
+  <div
+    id="app"
+    :class="
+      typeof weather.main != 'undefined' && weather.main.temp > 16 ? 'warm' : ''
+    "
+  >
     <div class="container">
       <div class="search-box">
-        <input class="search-bar" type="text" placeholder="Search..." />
+        <input
+          class="search-bar"
+          type="text"
+          placeholder="Search..."
+          @keyup.enter="axiosWeather"
+          v-model="query"
+        />
       </div>
 
-      <div class="weather-wrapper">
+      <!-- v-if="typeof weather.main != 'undefined' 判斷有weather.main才render，解決渲染錯誤Error in render: "TypeError: Cannot read property '0' of undefined-->
+      <div class="weather-wrapper" v-if="typeof weather.main != 'undefined'">
         <div class="location-box">
-          <div class="location">taichung</div>
-          <div class="date">Octorber 8th 2022</div>
+          <div class="location">{{ weather.name }}</div>
+          <div class="date">{{ currentDate }}</div>
         </div>
-      </div>
 
-      <div class="weather-box">
-        <div class="temperature">26°C</div>
-        <div class="weather">clouds</div>
+        <div class="weather-box">
+          <div class="temperature">{{ Math.round(weather.main.temp) }} °C</div>
+          <div class="weather">{{ weather.weather[0].main }}</div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
+import dayjs from 'dayjs'
+import advancedFormat from 'dayjs/plugin/advancedFormat'
+dayjs.extend(advancedFormat)
 export default {
-  name: 'App'
+  name: 'App',
+  data () {
+    return {
+      api_key: '921d70f2858e825af1a3fcce6ed94460',
+      base_url: 'https://api.openweathermap.org/data/2.5/',
+      query: 'taipei',
+      weather: {},
+      date: ''
+    }
+  },
+  computed: {
+    currentDate () {
+      return dayjs().format('MMMM Do YYYY')
+    }
+  },
+  methods: {
+    async axiosWeather () {
+      await axios
+        .get(
+          `https://api.openweathermap.org/data/2.5/weather?q=${this.query}&units=metric&appid=${this.api_key}`
+        )
+        .then((res) => (this.weather = res.data))
+    }
+  },
+  created () {
+    this.axiosWeather()
+  }
 }
 </script>
 
@@ -41,6 +83,10 @@ html {
 #app {
   background-image: url('./assets/cold-bg.jpg');
   background-size: 100% 100%;
+}
+
+#app.warm {
+  background-image: url('./assets/warm-bg.jpg');
 }
 
 .container {
