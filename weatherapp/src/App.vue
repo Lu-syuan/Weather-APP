@@ -50,7 +50,7 @@ export default {
   },
   computed: {
     currentDate () {
-      return dayjs().format('MMMM Do YYYY')
+      return dayjs().format('MMMM DD YYYY')
     }
   },
   methods: {
